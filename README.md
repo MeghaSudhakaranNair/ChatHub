@@ -87,13 +87,15 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID Google OAuth Client ID exposed to frontend Frontend
 
 1. Responsiveness and bug fixes, if any
 2. UI Enhancements - Make the UI a little more modern
+3. Add snackbar messages to give feedback to the user on their action like creating a chatroom
 4. Sort chatrooms based on timestamp
 
 ### Backend
 
 1. Unit testing
 2. Add more features like editing profile information, an alternate login option, forgot password, read receipts, and notifications
-3. Add LLM - when the user types @assistant, give an automated response using LLM
+3. Add more intuitive error messages to show to the user
+4. Add LLM - when the user types @assistant, give an automated response using LLM
 
 ### General
 
