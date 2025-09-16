@@ -1,8 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
-
+import authRoutes from "./routes/authRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -19,8 +20,9 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
+app.use("/api/auth", authRoutes);
 
-// Start server after DB connection
 const startServer = async () => {
   try {
     await prisma.$connect();
