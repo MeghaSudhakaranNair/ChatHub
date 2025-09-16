@@ -12,6 +12,9 @@ ChatHub is a real-time chat application built to enable seamless live conversati
 - **Real-time:** Socket.IO manages joining/leaving rooms, broadcasting messages, and tracking online users.
 - **Database:** Prisma manages user, room, membership, and message persistence with transactions where needed.
 
+## Database
+<img width="408" height="174" alt="Screenshot 2025-09-16 at 2 55 25 AM" src="https://github.com/user-attachments/assets/9ecb8edb-6ee3-4049-9bef-1ced6919ef79" />
+
 ## Core Features
 
 - User authentication via Google OAuth.
