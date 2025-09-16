@@ -13,7 +13,20 @@ ChatHub is a real-time chat application built to enable seamless live conversati
 - **Database:** Prisma manages user, room, membership, and message persistence with transactions where needed.
 
 ## Database
+1. Room - Table to store all the rooms available
 <img width="408" height="174" alt="Screenshot 2025-09-16 at 2 55 25 AM" src="https://github.com/user-attachments/assets/9ecb8edb-6ee3-4049-9bef-1ced6919ef79" />
+
+2. UserOnRoom - Mapping between the user and the room
+<img width="455" height="293" alt="Screenshot 2025-09-16 at 2 55 59 AM" src="https://github.com/user-attachments/assets/167dc0af-93f6-4e9d-9fe5-ed6315101920" />
+
+3. User - Stores the user's email, name, and profile photo from google-auth, an  optional field for password for future use
+<img width="866" height="124" alt="Screenshot 2025-09-16 at 2 55 46 AM" src="https://github.com/user-attachments/assets/f7d85ed4-2102-4dd2-b2b5-d32f5250e589" />
+
+4. Messages - Mapping between the message, user, and room
+<img width="585" height="159" alt="Screenshot 2025-09-16 at 2 55 11 AM" src="https://github.com/user-attachments/assets/0ef2b964-6341-4fba-95b1-5e0c0c25dbc2" />
+
+
+
 
 ## Core Features
 
