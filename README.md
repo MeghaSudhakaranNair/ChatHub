@@ -72,6 +72,15 @@ ChatHub is a real-time chat application built to enable seamless live conversati
 
 ### Environment Variables Summary
 
+# server
+
+DATABASE_URL Database connection string Backend .env
+JWT_SECRET JWT secret for signing authentication tokens Backend .env
+
+# client
+
+NEXT_PUBLIC_GOOGLE_CLIENT_ID Google OAuth Client ID exposed to frontend Frontend
+
 ## Future Improvements
 
 ### Frontend
