@@ -6,10 +6,64 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+ 
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// User model: Represents a user in the application.
+// This is used for authentication and to link messages to their sender.
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?
+  name      String?   
+  photoUrl  String?   
+  createdAt DateTime  @default(now())
+  messages  Message[]
+  rooms     UserOnRoom[]
+}
+
+// Room model: Represents a chat room.
+// This model is used to group messages and users.
+model Room {
+id        Int       @id @default(autoincrement())
+name      String    @unique // Unique name for the chat room
+createdAt DateTime  @default(now())
+messages  Message[] // A room can have many messages
+users     UserOnRoom[]
+}
+
+// This is the explicit join table for the many-to-many relationship.
+// It connects users and rooms, which is the standard way to do this in PostgreSQL.
+model UserOnRoom {
+user       User     @relation(fields: [userId], references: [id])
+userId     Int
+room       Room     @relation(fields: [roomId], references: [id])
+roomId     Int
+assignedAt DateTime @default(now())
+
+@@id([userId, roomId])
+}
+
+// Message model: Represents a single chat message.
+// This is the "fact" table that connects a user and a room.
+model Message {
+id        Int      @id @default(autoincrement())
+content   String   // The text content of the message
+createdAt DateTime @default(now())
+
+// Relations to the User and Room models
+user      User     @relation(fields: [userId], references: [id])
+userId    Int      // Foreign key linking to the User model
+
+room      Room     @relation(fields: [roomId], references: [id])
+roomId    Int      // Foreign key linking to the Room model
+}
+
+
+
+
