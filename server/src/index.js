@@ -13,7 +13,7 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5001;
 const usersInRoom = {};
-// Middleware
+
 app.use(express.json());
 
 app.use(
@@ -46,24 +46,21 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", async (roomId, user) => {
     const roomName = `room_${roomId}`;
     socket.join(roomName);
-    socket.data.user = user; // Store user info on socket
+    socket.data.user = user;
     console.log(`User ${socket.id} joined ${roomName}`);
     if (!user || !user.id) {
-      return; // Don't add invalid user
+      return;
     }
     if (!usersInRoom[roomName]) {
       usersInRoom[roomName] = [];
     }
 
-    // Remove existing entry for the same user or socket
     usersInRoom[roomName] = usersInRoom[roomName].filter(
       (u) => u.socketId !== socket.id && u.id !== user.id
     );
 
-    // Add user with socketId
     usersInRoom[roomName].push({ ...user, socketId: socket.id });
 
-    // Emit updated online users
     io.to(roomName).emit("onlineUsers", usersInRoom[roomName]);
   });
 
@@ -83,7 +80,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
 
-    // Remove user from all rooms
     for (const roomName in usersInRoom) {
       usersInRoom[roomName] = usersInRoom[roomName].filter(
         (u) => u.socketId !== socket.id
@@ -93,7 +89,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server after DB connection
 const startServer = async () => {
   try {
     await prisma.$connect();

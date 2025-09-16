@@ -1,3 +1,17 @@
+/**
+ * This module handles user authentication using Google OAuth integrated with Prisma ORM.
+ *
+ * - It defines a function to retrieve user profile information from Google's OAuth API using the access token.
+ * - The main handler, `googleAuth`, verifies the Google token, fetches user info, and checks for an existing user in the database.
+ * - If the user does not exist, it creates a new user record; otherwise, it updates their profile data.
+ * - Generates a JWT token for session management and sets it as an HTTP-only cookie.
+ * - Provides an endpoint `getUserDetails` to retrieve authenticated user details from the database based on the user ID from the request.
+ * - Defines a `handleLogout` function to clear the authentication cookie, effectively logging out the user.
+ *
+ * Error handling is implemented with try-catch blocks and appropriate HTTP status codes, ensuring robust API responses.
+ *
+ * This architecture supports secure OAuth login, user creation or update, and stateful session handling for web clients.
+ */
 import { PrismaClient } from "@prisma/client";
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
@@ -12,7 +26,7 @@ const getUserInfoFromAccessToken = async (accessToken) => {
       headers: { Authorization: `Bearer ${accessToken}` },
     }
   );
-  return response.data; // contains email, name, picture, etc.
+  return response.data;
 };
 export const googleAuth = async (req, res) => {
   const { token } = req.body;
@@ -96,7 +110,6 @@ export const getUserDetails = async (req, res) => {
 
 export const handleLogout = (req, res) => {
   try {
-    // Clear the token cookie to "log out"
     res.clearCookie("token", {
       httpOnly: true,
       sameSite: "lax",

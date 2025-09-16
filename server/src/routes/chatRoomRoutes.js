@@ -18,16 +18,16 @@ import {
 
 const router = express.Router();
 
-router.use(protect); // Protect all chat room routes
+router.use(protect);
 
-router.get("/allRooms", getRooms); // List active chat rooms
-router.post("/", validate(createRoomSchema), createRoom); // Create new chat room
+router.get("/allRooms", getRooms);
+router.post("/", validate(createRoomSchema), createRoom);
 router.get("/myRooms", getUserRooms);
-router.post("/:roomId/join", joinRoom); // Join room
+router.post("/:roomId/join", joinRoom);
 
-router.get("/:roomId/users", getRoomUsers); // List users in room
+router.get("/:roomId/users", getRoomUsers);
 
-router.get("/:roomId/messages", getMessages); // Get message history
-router.post("/:roomId/messages", validate(sendMessageSchema), postMessage); // Post new message
+router.get("/:roomId/messages", getMessages);
+router.post("/:roomId/messages", validate(sendMessageSchema), postMessage);
 
 export default router;

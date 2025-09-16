@@ -1,3 +1,20 @@
+/**
+ * REST API handlers for chat room and message management using Prisma ORM.
+ *
+ * - getRooms: Fetches and returns all chat rooms in the database.
+ * - getUserRooms: Retrieves chat rooms that the authenticated user is a member of, including room details.
+ * - createRoom: Creates a new chat room with the provided name and adds the creator as a member using a transaction.
+ * - joinRoom: Allows a user to join an existing chat room, ensuring unique membership via an upsert.
+ * - getRoomUsers: Fetches the list of users currently joined to a specific chat room.
+ * - getMessages: Retrieves all chat messages for a particular room, ordered by creation time ascending.
+ * - postMessage: Posts a new message to a chat room and emits the message to all clients connected via Socket.IO in real-time.
+ *
+ * Each function handles success by sending appropriate JSON data and HTTP status codes.
+ * Errors are caught globally and responded with a 500 status code and generic server error message.
+ *
+ * This API layer provides the core backend functionality to manage chat rooms, memberships,
+ * messaging, and synchronization with real-time socket events, enabling a full-featured chat system.
+ */
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export async function getRooms(req, res) {
@@ -13,8 +30,6 @@ export const getUserRooms = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch rooms this user belongs to from the DB
-    // Assuming your Prisma schema has a many-to-many relation with a userRooms or users field on chatRoom
     const userRooms = await prisma.userOnRoom.findMany({
       where: {
         userId: userId,
@@ -107,24 +122,6 @@ export async function getMessages(req, res) {
   }
 }
 
-// export async function postMessage(req, res) {
-//   try {
-//     const roomId = parseInt(req.params.roomId);
-//     const userId = req.user.id;
-//     const { content } = req.body;
-
-//     const message = await prisma.message.create({
-//       data: { roomId, userId, content },
-//     });
-
-//     // Here you could emit socket.io event to room channel to notify users
-
-//     res.status(201).json(message);
-//   } catch (error) {
-//     res.status(500).json({ error: "Server error" });
-//   }
-// }
-
 export async function postMessage(req, res) {
   try {
     const roomId = parseInt(req.params.roomId);
@@ -133,10 +130,9 @@ export async function postMessage(req, res) {
 
     const message = await prisma.message.create({
       data: { roomId, userId, content },
-      include: { user: true }, // include user for frontend
+      include: { user: true },
     });
 
-    // Get the io instance from Express app and emit event
     const io = req.app.get("io");
     io.to(`room_${roomId}`).emit("newMessage", message);
 

@@ -154,8 +154,6 @@ export default function ChatRoomsSidebar() {
         return res.json();
       })
       .then((response) => {
-        // The chat rooms array is inside response.data
-
         const rooms: ChatRoom[] = response.data.map((item: any) => ({
           id: item.room.id,
           name: item.room.name,
@@ -163,7 +161,7 @@ export default function ChatRoomsSidebar() {
 
         setChatRooms(rooms);
         if (rooms.length > 0) {
-          setSelectedRoom(rooms[0]); // Select the first room automatically
+          setSelectedRoom(rooms[0]);
         }
         setLoading(false);
       })
@@ -391,11 +389,11 @@ export default function ChatRoomsSidebar() {
                     <ListItemButton
                       key={index}
                       onClick={() => {
-                        setSelectedRoom(room); // This triggers useEffect below
+                        setSelectedRoom(room);
                       }}
                       sx={{
                         "&:hover": {
-                          backgroundColor: "rgba(0, 0, 0, 0.08)", // subtle hover color
+                          backgroundColor: "rgba(0, 0, 0, 0.08)",
                           cursor: "pointer",
                         },
                       }}
@@ -415,7 +413,7 @@ export default function ChatRoomsSidebar() {
                 variant="outlined"
                 fullWidth
                 sx={{ backgroundColor: "#000000", color: "#FFFFFF" }}
-                onClick={handleLogout} // Your logout handler function
+                onClick={handleLogout}
               >
                 Logout
               </Button>
@@ -456,7 +454,7 @@ export default function ChatRoomsSidebar() {
           </Box>
           <Box
             sx={{
-              flexGrow: 1, // fill remaining space
+              flexGrow: 1,
               overflowY: "auto",
             }}
           >
