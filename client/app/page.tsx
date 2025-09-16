@@ -1,34 +1,42 @@
+/**
+ * Google OAuth login component for authenticating users via Google accounts.
+ *
+ * - Wraps the app content inside GoogleOAuthProvider providing the app's Google client ID.
+ * - Uses useGoogleLogin hook from '@react-oauth/google' to initiate the OAuth login flow.
+ * - On successful login, sends the received Google access token securely to the backend API (/api/auth/google-auth).
+ * - Await backend validation and user creation/authentication and retrieves the authenticated user's info.
+ * - Sets the authenticated user in the global auth context to share user state app-wide.
+ * - Redirects the user to the main chat page after successful login.
+ * - Applies styled Material UI Button with custom colors for login action.
+ * - Handles and logs errors during login or backend communication.
+ *
+ * This component enables seamless integration of Google OAuth login in a React app,
+ * managing authentication state and routing post-login, using best practices for security,
+ * user experience, and state management.
+ */
 "use client";
 
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-// import { useState } from "react";
+
 import { Button, Box, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./context/authContext";
 
-// You must replace this with your actual Google Client ID
 const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
 
-// A separate component to contain the login logic and button
 const GoogleLoginButton = () => {
-  // const [message, setMessage] = useState(
-  //   "Click the button to sign in with Google"
-  // );
   const router = useRouter();
   const { setUser } = useAuth();
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log(tokenResponse);
-      // setMessage("Token received, sending to backend...");
       try {
-        console.log("testing");
         const response = await fetch(
           "http://localhost:5001/api/auth/google-auth",
           {
             method: "POST",
-            credentials: "include", // send cookies
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -41,15 +49,13 @@ const GoogleLoginButton = () => {
         if (response.ok) {
           router.push("/chat");
           const userData = await response.json();
-          setUser(userData.user); // <- critical to update context state here!
+          setUser(userData.user);
         }
       } catch (error) {
-        // setMessage(`Error: ${error.response?.data?.message || error.message}`);
         console.error("Backend error:", error);
       }
     },
     onError: (error: unknown) => {
-      // setMessage("Login Failed!");
       console.error("Login failed:", error);
     },
   });
