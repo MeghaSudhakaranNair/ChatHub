@@ -427,7 +427,7 @@ export default function ChatRoomsSidebar() {
             bgcolor: "#fff",
             display: "flex",
             flexDirection: "column",
-            p: 2,
+            p: 1,
             maxWidth: "80%",
           }}
         >

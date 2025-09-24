@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -10,6 +10,7 @@ import {
   Button,
   Paper,
   Avatar,
+  keyframes,
 } from "@mui/material";
 import { useAuth } from "../context/authContext";
 import { CircularProgress } from "@mui/material";
@@ -41,6 +42,20 @@ export default function ChatMessages({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const loggedInUserName = user?.name;
+  const pulseAnimation = keyframes`
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(214, 230, 248, 0.7);
+  }
+  70% {
+    transform: scale(.75);
+    box-shadow: 0 0 0 10px rgba(214, 230, 248, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(214, 230, 248, 0);
+  }
+`;
   /**
    * Smoothly scrolls the chat container to the bottom whenever the messages array updates.
    * This ensures the latest messages are always visible without user intervention.
@@ -67,6 +82,77 @@ export default function ChatMessages({
     onSendMessage(input);
     setInput("");
   };
+  const memoizedMessages = useMemo(() => {
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return (
+        <Typography color="text.secondary" align="center">
+          No conversations
+        </Typography>
+      );
+    }
+    return (
+      <List>
+        {messages.map((message) => {
+          const isOwnMessage = user ? message.user.id === user.id : false;
+          const isAssistantMessage = message.user.id === 4;
+          return (
+            <Box
+              key={message.id}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: isOwnMessage ? "flex-end" : "flex-start",
+                mb: 1,
+              }}
+            >
+              <Avatar
+                alt={message.user.name}
+                src={message.user.photoUrl}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  marginBottom: "5px", // Apply conditional styles for the AI avatar
+                  marginLeft: "5px",
+                  bgcolor: isAssistantMessage ? "#D6E6F8" : undefined,
+                  color: isAssistantMessage ? "black" : undefined,
+                  animation: isAssistantMessage
+                    ? `${pulseAnimation} 2s infinite ease-out`
+                    : undefined,
+                }}
+              >
+                {isAssistantMessage && "AI"}
+              </Avatar>
+              <Paper
+                sx={{
+                  bgcolor: isOwnMessage
+                    ? "#DCF8C6"
+                    : isAssistantMessage
+                    ? "#D6E6F8"
+                    : "#E5E5EA",
+                  color: "black",
+                  p: 2,
+                  borderRadius: 6,
+                  boxShadow: "none",
+                  wordWrap: "break-word",
+                }}
+              >
+                <Typography variant="body1">{message.content}</Typography>
+              </Paper>
+              <Typography
+                variant="caption"
+                sx={{
+                  alignSelf: isOwnMessage ? "flex-end" : "flex-start",
+                  color: "#000000",
+                }}
+              >
+                {new Date(message.createdAt).toLocaleTimeString()}
+              </Typography>
+            </Box>
+          );
+        })}
+      </List>
+    );
+  }, [messages, user]);
   if (isLoading || !user) {
     return (
       <Box
@@ -109,63 +195,7 @@ export default function ChatMessages({
           scrollbarWidth: "none",
         }}
       >
-        {Array.isArray(messages) && messages.length > 0 ? (
-          <List>
-            {messages.map((message) => {
-              const isOwnMessage = user ? message.user.id === user.id : false;
-              const isAssistantMessage = message.user.id === 4;
-              return (
-                <Box
-                  key={message.id}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: isOwnMessage ? "flex-end" : "flex-start",
-
-                    mb: 1,
-                  }}
-                >
-                  <Avatar
-                    alt={message.user.name}
-                    src={message.user.photoUrl}
-                    sx={{ width: 36, height: 36 }}
-                  />
-                  <Paper
-                    sx={{
-                      bgcolor: isOwnMessage
-                        ? "#DCF8C6"
-                        : isAssistantMessage
-                        ? "#D6E6F8" // Light blue for assistant messages
-                        : "#E5E5EA", // Gray for other users,
-                      color: "black",
-                      p: 2,
-
-                      borderRadius: 10,
-                      boxShadow: "none",
-                      wordWrap: "break-word",
-                    }}
-                  >
-                    <Typography variant="body1">{message.content}</Typography>
-                  </Paper>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "block",
-                      textAlign: "right",
-                      color: "#000000",
-                    }}
-                  >
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </Typography>
-                </Box>
-              );
-            })}
-          </List>
-        ) : (
-          <Typography color="text.secondary" align="center">
-            No conversations
-          </Typography>
-        )}
+        {memoizedMessages}
       </Box>
 
       <Box
