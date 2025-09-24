@@ -16,6 +16,24 @@
  * messaging, and synchronization with real-time socket events, enabling a full-featured chat system.
  */
 import { PrismaClient } from "@prisma/client";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+
+// Initialize LLM and LangChain components once, outside the handler
+const model = new ChatGoogleGenerativeAI({
+  model: "gemini-2.0-flash",
+  apiKey: process.env.GOOGLE_API_KEY,
+});
+
+const promptTemplate = PromptTemplate.fromTemplate(
+  `The following is a friendly conversation between a human and an AI. The AI is named Assistant.
+  Current conversation:
+  {history}
+  Human: {input}
+  Assistant:`
+);
+const chain = RunnableSequence.from([promptTemplate, model]);
 const prisma = new PrismaClient();
 export async function getRooms(req, res) {
   try {
@@ -59,7 +77,7 @@ export async function createRoom(req, res) {
   try {
     const { name } = req.body;
     const userId = req.user.id;
-    console.log(name);
+
     const roomWithMember = await prisma.$transaction(async (tx) => {
       const roomCreated = await tx.room.create({ data: { name } });
       await tx.userOnRoom.create({
@@ -82,7 +100,7 @@ export async function joinRoom(req, res) {
     const userId = req.user.id;
 
     const roomId = parseInt(req.params.roomId);
-    console.log("data", roomId, userId);
+
     const membership = await prisma.userOnRoom.upsert({
       where: { userId_roomId: { userId, roomId } },
       update: {},
@@ -127,15 +145,77 @@ export async function postMessage(req, res) {
     const roomId = parseInt(req.params.roomId);
     const userId = req.user.id;
     const { content } = req.body;
+    const io = req.app.get("io");
 
     const message = await prisma.message.create({
       data: { roomId, userId, content },
       include: { user: true },
     });
 
-    const io = req.app.get("io");
     io.to(`room_${roomId}`).emit("newMessage", message);
 
+    if (content.startsWith("@assistant")) {
+      const query = content.substring("@assistant".length).trim();
+
+      // Check for an empty query
+      if (query.length === 0) {
+        const assistantMessage = await prisma.message.create({
+          data: {
+            roomId,
+            userId: 4, // Use a special user ID for the assistant
+            content: "Hey, I'm here to help! What can I do for you?",
+          },
+          include: { user: true },
+        });
+        io.to(`room_${roomId}`).emit("newMessage", assistantMessage);
+        return res.status(201).json(userMessage);
+      }
+
+      // Load previous messages from the database
+      const existingMessages = await prisma.message.findMany({
+        where: { roomId },
+        orderBy: { createdAt: "asc" },
+        take: 10, // Limit history to the last 10 messages
+      });
+
+      // Format messages for the prompt
+      const formattedHistory = existingMessages
+        .map((msg) => `${msg.userId ? "Human" : "Assistant"}: ${msg.content}`)
+        .join("\n");
+
+      try {
+        // Generate AI response
+        const aiResponse = await chain.invoke({
+          history: formattedHistory,
+          input: query,
+        });
+
+        // Save the AI's response to the database
+        const assistantMessage = await prisma.message.create({
+          data: {
+            roomId,
+            userId: 4, // A special or dedicated ID for the assistant
+            content: aiResponse.content,
+          },
+          include: { user: true },
+        });
+
+        // Broadcast the AI's response to the room
+        io.to(`room_${roomId}`).emit("newMessage", assistantMessage);
+      } catch (error) {
+        console.error("Error generating AI response:", error);
+        // const errorMessage = await prisma.message.create({
+        //   data: {
+        //     roomId,
+        //     userId: null,
+        //     content:
+        //       "Sorry, I'm having trouble thinking right now. Please try again later.",
+        //   },
+        //   include: { user: true },
+        // });
+        io.to(`room_${roomId}`).emit("newMessage", errorMessage);
+      }
+    }
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ error: "Server error" });

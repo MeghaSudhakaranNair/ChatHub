@@ -428,6 +428,7 @@ export default function ChatRoomsSidebar() {
             display: "flex",
             flexDirection: "column",
             p: 2,
+            maxWidth: "80%",
           }}
         >
           <Box

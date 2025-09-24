@@ -113,6 +113,7 @@ export default function ChatMessages({
           <List>
             {messages.map((message) => {
               const isOwnMessage = user ? message.user.id === user.id : false;
+              const isAssistantMessage = message.user.id === 4;
               return (
                 <Box
                   key={message.id}
@@ -131,11 +132,16 @@ export default function ChatMessages({
                   />
                   <Paper
                     sx={{
-                      bgcolor: isOwnMessage ? "#DCF8C6" : "#E5E5EA",
+                      bgcolor: isOwnMessage
+                        ? "#DCF8C6"
+                        : isAssistantMessage
+                        ? "#D6E6F8" // Light blue for assistant messages
+                        : "#E5E5EA", // Gray for other users,
                       color: "black",
-                      p: 1,
-                      borderRadius: 20,
-                      width: "30%",
+                      p: 2,
+
+                      borderRadius: 10,
+                      boxShadow: "none",
                       wordWrap: "break-word",
                     }}
                   >
