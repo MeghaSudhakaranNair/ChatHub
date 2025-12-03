@@ -101,6 +101,5 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID Google OAuth Client ID exposed to frontend Frontend
 
 1. Code cleanup
 
-## Demo
-https://drive.google.com/file/d/1qq-H_iXNYAMxXOU5l3zJm4xRPlBsREtL/view?usp=sharing
+
 
